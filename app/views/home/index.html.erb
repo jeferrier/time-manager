@@ -1,23 +1,59 @@
 <div id="timers">
-	<timer-button id="Idle"></timer-button>
-	<timer-button id="Coding"></timer-button>
 	<timer-button id="Working"></timer-button>
-	<timer-button id="Testing"></timer-button>
+	<timer-button id="Bureacy"></timer-button>
+	<timer-button id="Idle"></timer-button>
+	<timer-button id="Wasting"></timer-button>
+	<div style="clear:both"></div>
+	<timer-button id="Coding"></timer-button>
+	<timer-button id="Meetings"></timer-button>
+	<timer-button id="Helping Others"></timer-button>
+	<timer-button id="Research"></timer-button>
 	<div style="clear:both"></div>
 	<timer-button id="Emails"></timer-button>
 	<timer-button id="Pull Requests"></timer-button>
 	<timer-button id="Jira"></timer-button>
-	<timer-button id="Research"></timer-button>
+	<timer-button id="Testing"></timer-button>
 	<div style="clear:both"></div>
-	<timer-button id="Wasting"></timer-button>
 	<timer-button id="Chatting"></timer-button>
-	<timer-button id="Helping Others"></timer-button>
-	<div style="clear:both"></div>
 	<timer-button id="Lunch"></timer-button>
-	<timer-button id="Meetings"></timer-button>
 	<timer-button id="Bathroom"></timer-button>
 	<timer-button id="Break"></timer-button>
+	<div style="clear:both"></div>
+	<button type="button" id="clear" class="btn btn-danger">Clear Cache</button>
+	<button type="button" id="print_all" class="btn btn-success">Print all records</button>
+	<button type="button" id="print_summary" class="btn btn-success">Print summary</button>
 </div>
 <script style="text/javascript">
 var index = new Index();
+document.getElementsByTagName('body')[0].addEventListener('interval', function(event){
+	var intervals = window.localStorage.getItem('time-manager.intervals') || '{}';
+	intervals = JSON.parse(intervals);
+	if (event.detail.intervalTime && event.detail.intervalTitle){
+		let interval_list = intervals[event.detail.intervalTitle] || [];
+		interval_list.push({time: event.detail.intervalTime})
+		intervals[event.detail.intervalTitle] = interval_list;
+	}
+	window.localStorage.setItem('time-manager.intervals', JSON.stringify(intervals));
+});
+document.getElementById('clear').addEventListener('click', function(){
+	window.localStorage.setItem('time-manager.intervals', '{}');
+});
+document.getElementById('print_summary').addEventListener('click', function(){
+	var intervals = window.localStorage.getItem('time-manager.intervals') || '{}',
+		ordered_intervals = {},
+		titles = [],
+		output = [];
+	intervals = JSON.parse(intervals);
+	Object.keys(intervals).sort().forEach(function(key){
+		ordered_intervals[key] = intervals[key];
+	});
+	Object.keys(ordered_intervals).forEach(function(key){
+		titles.push(key);
+		output.push(_.reduce(ordered_intervals[key], (acc, time) => {
+			return acc + (time.time / 86400);
+		}, 0));
+	});
+	console.log(titles.join(', ') + '\n' + output.join(', '));
+});
+document.getElementById('clear').addEventListener('click', function(){});
 </script>

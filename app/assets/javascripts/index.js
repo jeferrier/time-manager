@@ -10,13 +10,21 @@ class Index {
 			template: ch('div', {
 				'class': 'timer'
 			}, [
-				ch('button', {
-					'v-on:click': 'toggleTimer',
-					type: 'button',
-					'class': 'btn',
-					'v-bind:class': 'computedClasses'
-				}, [
-					'{{ id }}'
+				ch('div', {}, [
+					ch('button', {
+						'v-on:click': 'toggleTimer',
+						type: 'button',
+						'class': 'btn',
+						'v-bind:class': 'computedClasses'
+					}, [
+						'{{ id }}'
+					]),
+					ch('button', {
+						'v-on:click': 'cancelTimer',
+						type: 'button',
+						'class': 'btn btn-danger',
+						'v-bind:class': 'hiddenButtonClasses'
+					}, ['X'])
 				]),
 				ch('div', {
 					'class': 'time-display'
@@ -52,25 +60,50 @@ class Index {
 					return classes;
 				},
 
+				hiddenButtonClasses: function(){
+					var classes = {
+						'hidden': false
+					};
+
+					if (!this.startTime){
+						classes['hidden'] = true;
+					}
+					return classes;
+				},
+
 				totalTimeDisplayable: function(){
 					return this.timeFromSeconds(this.totalTime);
 				},
 
 				averageTime: function(){
 					if (this.intervals > 0){
-						return this.timeFromSeconds(Math.floor(this.totalTime/this.intervals));
+						return this.timeFromSeconds(Math.floor(this.totalTime / this.intervals));
 					}
 					return this.timefromSeconds(0);
 				}
 			},
 			methods: {
 				toggleTimer: function(){
+					var thisIntervalTime = 0;
 					if (_.isUndefined(this.startTime)){
-						this.startTime = Math.floor(Date.now()/1000);
+						this.startTime = Math.floor(Date.now() / 1000);
 					} else {
-						this.endTime = Math.floor(Date.now()/1000);
-						this.totalTime += this.endTime - this.startTime;
+						this.endTime = Math.floor(Date.now() / 1000);
+						thisIntervalTime = this.endTime - this.startTime;
+						this.totalTime += thisIntervalTime;
 						this.intervals++;
+						this.startTime = undefined;
+						document.getElementsByTagName('body')[0].dispatchEvent(new CustomEvent('interval', {
+							detail: {
+								intervalTime: thisIntervalTime,
+								intervalTitle: $(this.$el).find('.btn.btn-success').text()
+							}
+						}));
+					}
+				},
+
+				cancelTimer: function(){
+					if (!_.isUndefined(this.startTime)){
 						this.startTime = undefined;
 					}
 				},
